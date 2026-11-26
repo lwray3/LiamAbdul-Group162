@@ -21,6 +21,8 @@ public:
 signals:
     void backRequested();
 
+    void roundFinished(int playerScore, int bankerScore);
+
 private slots:
     void onDeal();
 

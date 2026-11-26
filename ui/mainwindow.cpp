@@ -112,6 +112,13 @@ void MainWindow::openBaccarat()
         baccaratWindow = new BaccaratWindow(this);
         baccaratWindow->setWindowFlags(Qt::Window);
 
+        connect(
+            baccaratWindow,
+            &BaccaratWindow::roundFinished,
+            this,
+            &MainWindow::baccaratRoundFinished
+            );
+
         connect(baccaratWindow, &BaccaratWindow::backRequested,
                 this, [this]() {
                     baccaratWindow->hide();

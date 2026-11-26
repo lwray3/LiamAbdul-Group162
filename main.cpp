@@ -8,6 +8,7 @@
 #include <QMessageBox>
 #include <QDebug>
 #include "storage/storage.h"
+#include "storage/statistics.h"
 
 int main(int argc, char *argv[])
 {
@@ -37,7 +38,6 @@ int main(int argc, char *argv[])
     QJsonObject gameData;
     QString error;
 
-    // Try loading the player's existing save
     auto status = storage.load(gameData, error);
 
     if (status == JsonFileStorage::LoadStatus::Success) {
@@ -66,7 +66,6 @@ int main(int argc, char *argv[])
             return 1;
         }
 
-        // Create the player's initial save file
         if (!storage.save(gameData, error)) {
             QMessageBox::critical(
                 nullptr, "Storage Error",
@@ -78,8 +77,6 @@ int main(int argc, char *argv[])
         qDebug() << "Initial save created.";
     }
     else {
-        // Existing file could not be loaded.
-        // Do not overwrite potentially recoverable data.
         QMessageBox::critical(
             nullptr, "Storage Error",
             "Cannot load the existing save file: " + error
@@ -90,6 +87,75 @@ int main(int argc, char *argv[])
     qDebug() << "Save location:" << savePath;
 
     MainWindow w;
+
+    QObject::connect(
+        &w,
+        &MainWindow::baccaratRoundFinished,
+        &w,
+        [&storage, &gameData, &w](
+            int playerScore,
+            int bankerScore
+            ) {
+            SaveStatistics::Outcome outcome;
+
+            if (playerScore > bankerScore) {
+                outcome = SaveStatistics::Outcome::Win;
+            }
+            else if (bankerScore > playerScore) {
+                outcome = SaveStatistics::Outcome::Loss;
+            }
+            else {
+                outcome = SaveStatistics::Outcome::Tie;
+            }
+
+            QJsonObject updatedData = gameData;
+            QString saveError;
+
+            bool recorded = SaveStatistics::recordRound(
+                updatedData,
+                "baccarat",
+                outcome,
+                saveError
+                );
+
+            if (!recorded) {
+                QMessageBox::warning(
+                    &w,
+                    "Statistics Error",
+                    "Could not update Baccarat statistics: "
+                        + saveError
+                    );
+                return;
+            }
+
+            if (!storage.save(updatedData, saveError)) {
+                QMessageBox::warning(
+                    &w,
+                    "Save Error",
+                    "The round completed, but its statistics "
+                    "could not be saved: " + saveError
+                    );
+                return;
+            }
+
+            gameData = updatedData;
+
+            QJsonObject stats =
+                gameData["statistics"].toObject()
+                    ["baccarat"].toObject();
+
+            qDebug() << "Baccarat round saved!";
+            qDebug() << "Total rounds:"
+                     << stats["rounds_played"].toInt();
+            qDebug() << "Player-hand wins:"
+                     << stats["wins"].toInt();
+            qDebug() << "Banker-hand wins:"
+                     << stats["losses"].toInt();
+            qDebug() << "Ties:"
+                     << stats["ties"].toInt();
+        }
+        );
+
     w.show();
 
     return a.exec();

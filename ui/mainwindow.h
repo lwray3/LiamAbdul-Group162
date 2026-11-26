@@ -22,6 +22,10 @@ public:
     explicit MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
 
+signals:
+    void baccaratRoundFinished(int playerScore, int bankerScore);
+
+
 private slots:
     void openBlackjack();
     void openPoker();

@@ -119,6 +119,8 @@ void BaccaratWindow::onDeal()
     }
 
     ui->result_label->setText(result);
+
+    emit roundFinished(playerScore, bankerScore);
 }
 BaccaratWindow::~BaccaratWindow()
 {

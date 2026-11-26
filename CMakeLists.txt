@@ -74,7 +74,11 @@ qt_add_executable(CasinoGame_3307
     storage/storage.h
     storage/storage.cpp
 
+    storage/statistics.h
+    storage/statistics.cpp
+
     README.md
+
 )
 
 qt_add_resources(CasinoGame_3307 "mirage_defaults"
