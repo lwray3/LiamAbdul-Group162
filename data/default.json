@@ -1,0 +1,29 @@
+
+{
+  "schema_version": 1,
+  "player": {
+    "virtual_currency": 0
+  },
+  "statistics": {
+    "blackjack": {
+      "rounds_played": 0,
+      "wins": 0,
+      "losses": 0,
+      "ties": 0
+    },
+    "poker": {
+      "rounds_played": 0,
+      "wins": 0,
+      "losses": 0,
+      "ties": 0
+    },
+    "baccarat": {
+      "rounds_played": 0,
+      "wins": 0,
+      "losses": 0,
+      "ties": 0
+    }
+  },
+  "completed_games": [],
+  "active_game": null
+}
