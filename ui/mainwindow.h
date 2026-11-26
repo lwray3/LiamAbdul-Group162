@@ -23,8 +23,20 @@ public:
     ~MainWindow();
 
 signals:
-    void baccaratRoundFinished(int playerScore, int bankerScore);
+    void baccaratRoundFinished(
+        int playerScore,
+        int bankerScore
+        );
 
+    void blackjackRoundFinished(
+        bool playerWon,
+        bool tied
+        );
+
+    void pokerRoundFinished(
+        bool playerWon,
+        bool tied
+        );
 
 private slots:
     void openBlackjack();

@@ -28,6 +28,9 @@ public:
         );
     ~BlackjackWindow();
 
+signals:
+    void roundFinished(bool playerWon, bool tied);
+
 private slots:
     void onHit();
     void onStand();
@@ -48,6 +51,7 @@ private:
 
         return *blackjack;
     }
+    bool roundResultReported = false;
     QVector<CardWidget *> playerCards;
     QVector<CardWidget *> dealerCards;
     int activeAnimations = 0;

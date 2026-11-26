@@ -107,10 +107,11 @@ void PokerWindow::displayInitialCards()
 
 void PokerWindow::onCall()
 {
-    if (!game().canCall()) {
+    if (animationRunning || !game().canCall()) {
         return;
     }
     game().call();
+    afterBettingAction();
     updateButtons();
     updatePlayerStats();
 }
@@ -118,10 +119,11 @@ void PokerWindow::onCall()
 void PokerWindow::onRaise()
 {
     int raiseAmount = ui->raiseAmountSpinBox->value();
-    if (!game().canRaise(raiseAmount)) {
+    if (animationRunning || !game().canRaise(raiseAmount)) {
         return;
     }
     game().raise(raiseAmount);
+    afterBettingAction();
     updatePlayerStats();
     updateButtons();
 }
@@ -271,15 +273,20 @@ void PokerWindow::finishRoundDisplay()
 
     updateLabels();
     QString message;
+    bool playerWon = false;
+    bool tied = false;
 
     if (game().getResult() == PokerResult::PlayerWins) {
         message = "You win!";
+        playerWon = true;
     }
     else if (game().getResult() == PokerResult::DealerWins) {
         message = "Computer wins!";
     }
     else {
         message = "It's a tie!";
+        tied = true;
+
     }
     if (game().getCommunityCards().size() == 5) {
         const auto playerRank = game().getPlayerHandRank();
@@ -309,6 +316,10 @@ void PokerWindow::finishRoundDisplay()
         if (card) {
             card->setFaceUp(true);
         }
+    }
+    if (!roundResultReported) {
+        roundResultReported = true;
+        emit roundFinished(playerWon, tied);
     }
 }
 
@@ -344,6 +355,7 @@ void PokerWindow::onPlayAgain()
     ui->playerHandLabel->clear();
     ui->dealerHandLabel->clear();
     manager.startRound();
+    roundResultReported = false;
     displayInitialCards();
     updateLabels();
     updateButtons();

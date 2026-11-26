@@ -31,6 +31,12 @@ void MainWindow::openBlackjack()
             manager,
             this
             );
+        connect(
+            blackjackWindow,
+            &BlackjackWindow::roundFinished,
+            this,
+            &MainWindow::blackjackRoundFinished
+            );
         blackjackWindow->setWindowFlag(Qt::Window, true);
         connect(
             blackjackWindow,
@@ -69,6 +75,12 @@ void MainWindow::openPoker()
         manager.setGame(std::move(poker));
         manager.startRound();
         pokerWindow = new PokerWindow(manager, this);
+        connect(
+            pokerWindow,
+            &PokerWindow::roundFinished,
+            this,
+            &MainWindow::pokerRoundFinished
+            );
 
         // Make PokerWindow a separate window
         pokerWindow->setWindowFlag(Qt::Window, true);

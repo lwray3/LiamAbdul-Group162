@@ -25,6 +25,9 @@ public:
 
     ~PokerWindow() override;
 
+signals:
+    void roundFinished(bool playerWon, bool tied);
+
 private slots:
     void onCheck();
     void onBet();
@@ -52,6 +55,7 @@ private:
     QVector<CardWidget*> playerCards;
     QVector<CardWidget*> dealerCards;
     QVector<CardWidget*> communityCardWidgets;
+    bool roundResultReported = false;
     int activeAnimations = 0;
     bool animationRunning = false;
     void animateCard(

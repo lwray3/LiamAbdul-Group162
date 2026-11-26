@@ -194,6 +194,10 @@ void BlackjackWindow::finishRoundDisplay()
     int playerScore = game().getPlayerScore();
     int dealerScore = game().getDealerScore();
     QString result;
+
+    bool playerWon = false;
+    bool tied = false;
+
     if (playerScore > 21) {
         result = "Player busts! You lose!";
     }
@@ -219,6 +223,11 @@ void BlackjackWindow::finishRoundDisplay()
     //these are the buttons used after the game ends
     ui->playAgainButton->show();
     ui->mainMenuButton->show();
+
+    if (!roundResultReported) {
+        roundResultReported = true;
+        emit roundFinished(playerWon, tied);
+    }
 }
 
 void BlackjackWindow::afterPlayerHitAnimation()
@@ -381,6 +390,7 @@ void BlackjackWindow::onPlayAgain()
         return;
     }
     manager.restartRound();
+    roundResultReported = false;
     clearDisplayedCards();
     ui->playAgainButton->hide();
     ui->mainMenuButton->hide();

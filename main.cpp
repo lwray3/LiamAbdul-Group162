@@ -86,16 +86,66 @@ int main(int argc, char *argv[])
 
     qDebug() << "Save location:" << savePath;
 
+
     MainWindow w;
+
+    auto saveRound = [&storage, &gameData, &w](
+                         const QString& gameName,
+                         SaveStatistics::Outcome outcome
+                         ) {
+        QJsonObject updatedData = gameData;
+        QString saveError;
+
+        bool recorded = SaveStatistics::recordRound(
+            updatedData,
+            gameName,
+            outcome,
+            saveError
+            );
+
+        if (!recorded) {
+            QMessageBox::warning(
+                &w,
+                "Statistics Error",
+                "Could not update " + gameName +
+                    " statistics: " + saveError
+                );
+            return;
+        }
+
+        if (!storage.save(updatedData, saveError)) {
+            QMessageBox::warning(
+                &w,
+                "Save Error",
+                "Could not save " + gameName +
+                    " statistics: " + saveError
+                );
+            return;
+        }
+
+        gameData = updatedData;
+
+        QJsonObject stats =
+            gameData["statistics"].toObject()
+                [gameName].toObject();
+
+        qDebug() << gameName << "round saved!";
+        qDebug() << "Total rounds:"
+                 << stats["rounds_played"].toInt();
+        qDebug() << "Wins:"
+                 << stats["wins"].toInt();
+        qDebug() << "Losses:"
+                 << stats["losses"].toInt();
+        qDebug() << "Ties:"
+                 << stats["ties"].toInt();
+    };
 
     QObject::connect(
         &w,
         &MainWindow::baccaratRoundFinished,
         &w,
-        [&storage, &gameData, &w](
-            int playerScore,
-            int bankerScore
-            ) {
+        [&saveRound](int playerScore, int bankerScore) {
+
             SaveStatistics::Outcome outcome;
 
             if (playerScore > bankerScore) {
@@ -108,51 +158,53 @@ int main(int argc, char *argv[])
                 outcome = SaveStatistics::Outcome::Tie;
             }
 
-            QJsonObject updatedData = gameData;
-            QString saveError;
+            saveRound("baccarat", outcome);
+        }
+        );
 
-            bool recorded = SaveStatistics::recordRound(
-                updatedData,
-                "baccarat",
-                outcome,
-                saveError
+    auto savePlayerResult = [&saveRound](
+                                const QString& gameName,
+                                bool playerWon,
+                                bool tied
+                                ) {
+        SaveStatistics::Outcome outcome;
+
+        if (tied) {
+            outcome = SaveStatistics::Outcome::Tie;
+        }
+        else if (playerWon) {
+            outcome = SaveStatistics::Outcome::Win;
+        }
+        else {
+            outcome = SaveStatistics::Outcome::Loss;
+        }
+
+        saveRound(gameName, outcome);
+    };
+
+    QObject::connect(
+        &w,
+        &MainWindow::blackjackRoundFinished,
+        &w,
+        [&savePlayerResult](bool playerWon, bool tied) {
+            savePlayerResult(
+                "blackjack",
+                playerWon,
+                tied
                 );
+        }
+        );
 
-            if (!recorded) {
-                QMessageBox::warning(
-                    &w,
-                    "Statistics Error",
-                    "Could not update Baccarat statistics: "
-                        + saveError
-                    );
-                return;
-            }
-
-            if (!storage.save(updatedData, saveError)) {
-                QMessageBox::warning(
-                    &w,
-                    "Save Error",
-                    "The round completed, but its statistics "
-                    "could not be saved: " + saveError
-                    );
-                return;
-            }
-
-            gameData = updatedData;
-
-            QJsonObject stats =
-                gameData["statistics"].toObject()
-                    ["baccarat"].toObject();
-
-            qDebug() << "Baccarat round saved!";
-            qDebug() << "Total rounds:"
-                     << stats["rounds_played"].toInt();
-            qDebug() << "Player-hand wins:"
-                     << stats["wins"].toInt();
-            qDebug() << "Banker-hand wins:"
-                     << stats["losses"].toInt();
-            qDebug() << "Ties:"
-                     << stats["ties"].toInt();
+    QObject::connect(
+        &w,
+        &MainWindow::pokerRoundFinished,
+        &w,
+        [&savePlayerResult](bool playerWon, bool tied) {
+            savePlayerResult(
+                "poker",
+                playerWon,
+                tied
+                );
         }
         );
 
