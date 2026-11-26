@@ -70,9 +70,15 @@ qt_add_executable(CasinoGame_3307
 
     ui/GameWindow.cpp
     ui/GameWindow.h
+
+    ${CMAKE_CURRENT_SOURCE_DIR}/storage/storage.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/storage/storage.cpp
     README.md
+    storage/storage.cpp
+    storage/storage.h storage/storage.cpp
+    storage/storage.h
 )
-)
+
 
 # Allow source files to include headers from both folders
 target_include_directories(CasinoGame_3307 PRIVATE
